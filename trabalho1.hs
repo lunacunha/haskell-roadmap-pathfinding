@@ -17,28 +17,32 @@ cities = undefined -- modifiy this line to implement the solution, for each exer
 
 -- temos de verificar sempre para os dois lados porque é undirected
 
+-- função 2
 areAdjacent :: RoadMap -> City -> City -> Bool
 areAdjacent [] _ _ = False
 areAdjacent ((c1, c2, _):xs) city1 city2 -- temos de pôr (c1,c2,_) porque queremos comparar elementos especificos do tuplo
-    | (c1 == city1 && c2 == city2) | (c1 == city2 && c2 == city1) = True
+    | (c1 == city1 && c2 == city2) || (c1 == city2 && c2 == city1) = True
     | otherwise = areAdjacent xs city1 city2
 
 
+-- função 3
 distance :: RoadMap -> City -> City -> Maybe Distance
 distance [] _ _ = Nothing
-distance [(c1,c2,d):xs] city1 city2
-    | (c1 == city1 && c2 == city2) | (c1 == city2 && c2 == city1) = Just (d)
+distance ((c1,c2,d):xs) city1 city2
+    | (c1 == city1 && c2 == city2) || (c1 == city2 && c2 == city1) = Just (d)
     | otherwise = distance xs city1 city2
 
 
+-- função 4
 adjacent :: RoadMap -> City -> [(City,Distance)]
 adjacent [] _ = []
 adjacent ((c1, c2, d):xs) city 
-    | (c1 == city) = [(c2, d)] 
-    | (c2 == city) = [(c1, d)] 
+    | (c1 == city) = [(c2, d)] ++ adjacent xs city
+    | (c2 == city) = [(c1, d)] ++ adjacent xs city
     | otherwise = adjacent xs city 
 
 
+-- função 5
 pathDistance :: RoadMap -> Path -> Maybe Distance
 pathDistance = undefined
 
@@ -65,4 +69,4 @@ gTest2 :: RoadMap
 gTest2 = [("0","1",10),("0","2",15),("0","3",20),("1","2",35),("1","3",25),("2","3",30)]
 
 gTest3 :: RoadMap -- unconnected graph
-gTest3 = [("0","1",4),("2","3",2)]
+gTest3 = [("0","1",4),("2","3",2)] 
