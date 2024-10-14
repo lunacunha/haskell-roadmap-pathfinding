@@ -17,7 +17,7 @@ cities = undefined -- modifiy this line to implement the solution, for each exer
 
 -- temos de verificar sempre para os dois lados porque é undirected
 
--- função 2
+-- função 2 (SEMI TESTADA)
 areAdjacent :: RoadMap -> City -> City -> Bool
 areAdjacent [] _ _ = False
 areAdjacent ((c1, c2, _):xs) city1 city2 -- temos de pôr (c1,c2,_) porque queremos comparar elementos especificos do tuplo
@@ -33,7 +33,7 @@ distance ((c1,c2,d):xs) city1 city2
     | otherwise = distance xs city1 city2
 
 
--- função 4
+-- função 4 (SEMI TESTADA)
 adjacent :: RoadMap -> City -> [(City,Distance)]
 adjacent [] _ = []
 adjacent ((c1, c2, d):xs) city 
@@ -42,9 +42,20 @@ adjacent ((c1, c2, d):xs) city
     | otherwise = adjacent xs city 
 
 
--- função 5
+-- função 5 (SEMI TESTADA)
 pathDistance :: RoadMap -> Path -> Maybe Distance
-pathDistance = undefined
+pathDistance _ [] = Just 0
+pathDistance _ [_] = Just 0
+pathDistance [] _ = Nothing
+pathDistance road_map (c1:c2:xs) =  -- temos de pôr duas cidades pq temos de ver a distancia
+    if distance road_map c1 c2 == Nothing || pathDistance road_map (c2:xs) == Nothing 
+    then Nothing 
+    else Just (dist + rest)
+    where
+        Just dist = distance road_map c1 c2  -- distância entre c1 e c2
+        Just rest = pathDistance road_map (c2:xs)  -- distância restante do caminho (recursão)
+
+   
 
 rome :: RoadMap -> [City]
 rome = undefined
