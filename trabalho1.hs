@@ -15,14 +15,29 @@ type RoadMap = [(City,City,Distance)]
 cities :: RoadMap -> [City]
 cities = undefined -- modifiy this line to implement the solution, for each exercise not solved, leave the function definition like this
 
+-- temos de verificar sempre para os dois lados porque é undirected
+
 areAdjacent :: RoadMap -> City -> City -> Bool
-areAdjacent = undefined
+areAdjacent [] _ _ = False
+areAdjacent ((c1, c2, _):xs) city1 city2 -- temos de pôr (c1,c2,_) porque queremos comparar elementos especificos do tuplo
+    | (c1 == city1 && c2 == city2) | (c1 == city2 && c2 == city1) = True
+    | otherwise = areAdjacent xs city1 city2
+
 
 distance :: RoadMap -> City -> City -> Maybe Distance
-distance = undefined
+distance [] _ _ = Nothing
+distance [(c1,c2,d):xs] city1 city2
+    | (c1 == city1 && c2 == city2) | (c1 == city2 && c2 == city1) = Just (d)
+    | otherwise = distance xs city1 city2
+
 
 adjacent :: RoadMap -> City -> [(City,Distance)]
-adjacent = undefined
+adjacent [] _ = []
+adjacent ((c1, c2, d):xs) city 
+    | (c1 == city) = [(c2, d)] 
+    | (c2 == city) = [(c1, d)] 
+    | otherwise = adjacent xs city 
+
 
 pathDistance :: RoadMap -> Path -> Maybe Distance
 pathDistance = undefined
