@@ -1,4 +1,4 @@
---import qualified Data.List
+import qualified Data.List
 --import qualified Data.Array
 --import qualified Data.Bits
 
@@ -12,8 +12,11 @@ type Distance = Int
 
 type RoadMap = [(City,City,Distance)]
 
+
+-- função 1 (100% testada)
 cities :: RoadMap -> [City]
-cities = undefined -- modifiy this line to implement the solution, for each exercise not solved, leave the function definition like this
+cities road_map = Data.List.nub [city | (c1,c2,_) <- road_map , city <- [c1,c2]] -- nub porque temos de tirar os duplicados
+
 
 -- temos de verificar sempre para os dois lados porque é undirected
 
@@ -56,7 +59,7 @@ pathDistance road_map (c1:c2:xs) =  -- temos de pôr duas cidades pq temos de ve
         Just rest = pathDistance road_map (c2:xs)  -- distância restante do caminho (recursão)
 
    
-
+-- função 6
 rome :: RoadMap -> [City]
 rome = undefined
 
