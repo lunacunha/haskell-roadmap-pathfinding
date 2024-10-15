@@ -28,7 +28,7 @@ areAdjacent ((c1, c2, _):xs) city1 city2 -- temos de pôr (c1,c2,_) porque quere
     | otherwise = areAdjacent xs city1 city2
 
 
--- função 3
+-- função 3 (SEMI TESTADA)
 distance :: RoadMap -> City -> City -> Maybe Distance
 distance [] _ _ = Nothing
 distance ((c1,c2,d):xs) city1 city2
@@ -59,9 +59,13 @@ pathDistance road_map (c1:c2:xs) =  -- temos de pôr duas cidades pq temos de ve
         Just rest = pathDistance road_map (c2:xs)  -- distância restante do caminho (recursão)
 
    
--- função 6
+-- função 6 (SEMI TESTADA)
 rome :: RoadMap -> [City]
-rome = undefined
+rome road_map = [city | city <- cities road_map, length (adjacent road_map city) == highest_degree]
+  where
+    highest_degree = maximum [length (adjacent road_map city) | city <- cities road_map] -- maximum em vez de max porque maximum retorna o valor máx de uma lista
+
+
 
 isStronglyConnected :: RoadMap -> Bool
 isStronglyConnected = undefined
