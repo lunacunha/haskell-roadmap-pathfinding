@@ -66,10 +66,28 @@ rome road_map = [city | city <- cities road_map, length (adjacent road_map city)
     highest_degree = maximum [length (adjacent road_map city) | city <- cities road_map] -- maximum em vez de max porque maximum retorna o valor máx de uma lista
 
 
-
+-- função 7 (testada)
 isStronglyConnected :: RoadMap -> Bool
-isStronglyConnected = undefined
+isStronglyConnected road_map = 
+    case cities road_map of
+        [] -> True  -- um grafo vazio é conectado
+        (first_city:_) ->
+            let reachable_from_first = reachable road_map first_city
+                total_cities = length (cities road_map)
+            in length reachable_from_first == total_cities  
 
+
+dfs :: RoadMap -> City -> [City] -> [City]
+dfs road_map city visited_cities
+ | city `elem` visited_cities = visited_cities
+ | otherwise = foldl (\acc (adj_city, _) -> dfs road_map adj_city acc) (city : visited_cities) (adjacent road_map city)
+
+-- função para chegar a todas as reachable cities a partir de uma determinada city
+reachable :: RoadMap -> City -> [City]
+reachable road_map city = dfs road_map city []
+
+
+-- função 8
 shortestPath :: RoadMap -> City -> City -> [Path]
 shortestPath = undefined
 
