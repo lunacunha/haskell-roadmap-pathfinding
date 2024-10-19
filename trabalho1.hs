@@ -89,8 +89,26 @@ reachable road_map city = dfs road_map city []
 
 -- função 8
 shortestPath :: RoadMap -> City -> City -> [Path]
-shortestPath = undefined
+shortestPath road_map start_city end_city =
+    let all_paths = bfsDijsktra road_map start_city end_city
+        valid_paths = filter (\p -> pathDistance road_map p /= Nothing) all_paths  -- só paths válidos
+        min_dist = minimum [d | Just d <- map (pathDistance road_map) valid_paths]  -- distância + pequena
+    in filter (\p -> pathDistance road_map p == Just min_dist) valid_paths  -- só paths com a distância min
 
+-- bfs + dijkstra (porque as edges têm pesos diferentes)
+bfsDijsktra :: RoadMap -> City -> City -> [Path]
+bfsDijkstra road_map start end = bfs [[start]]
+  where
+    bfs [] = []  -- não há mais paths
+    bfs (current_path:remaining_paths)
+      | last current_path == end = current_path : bfs remaining_paths
+      | otherwise = bfs (remaining_paths ++ next_paths)
+      where
+        next_cities = [city | (city, _) <- adjacent road_map (last current_path), city `notElem` current_path]
+        next_paths = [current_path ++ [next_city] | next_city <- next_cities]
+
+
+-- função 9
 travelSales :: RoadMap -> Path
 travelSales = undefined
 
