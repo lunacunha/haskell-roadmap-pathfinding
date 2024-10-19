@@ -1,6 +1,6 @@
 import qualified Data.List
 --import qualified Data.Array
---import qualified Data.Bits
+import qualified Data.Bits
 
 -- PFL 2024/2025 Practical assignment 1
 
@@ -87,16 +87,16 @@ reachable :: RoadMap -> City -> [City]
 reachable road_map city = dfs road_map city []
 
 
--- função 8
+-- função 8 (semi testada)
 shortestPath :: RoadMap -> City -> City -> [Path]
 shortestPath road_map start_city end_city =
-    let all_paths = bfsDijsktra road_map start_city end_city
+    let all_paths = bfsDijkstra road_map start_city end_city
         valid_paths = filter (\p -> pathDistance road_map p /= Nothing) all_paths  -- só paths válidos
         min_dist = minimum [d | Just d <- map (pathDistance road_map) valid_paths]  -- distância + pequena
     in filter (\p -> pathDistance road_map p == Just min_dist) valid_paths  -- só paths com a distância min
 
 -- bfs + dijkstra (porque as edges têm pesos diferentes)
-bfsDijsktra :: RoadMap -> City -> City -> [Path]
+bfsDijkstra :: RoadMap -> City -> City -> [Path]
 bfsDijkstra road_map start end = bfs [[start]]
   where
     bfs [] = []  -- não há mais paths
@@ -112,6 +112,8 @@ bfsDijkstra road_map start end = bfs [[start]]
 travelSales :: RoadMap -> Path
 travelSales = undefined
 
+
+-- função 10
 tspBruteForce :: RoadMap -> Path
 tspBruteForce = undefined -- only for groups of 3 people; groups of 2 people: do not edit this function
 
