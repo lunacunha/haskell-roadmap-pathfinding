@@ -110,7 +110,29 @@ bfsDijkstra road_map start end = bfs [[start]]
 
 -- função 9
 travelSales :: RoadMap -> Path
-travelSales = undefined
+travelSales road_map = 
+    let all_cities = cities road_map
+        all_routes = Data.List.permutations all_cities
+        valid_routes = filter (isValidRoute road_map) all_routes
+    in if null valid_routes 
+       then []  -- no valid routes
+       else let distances = map (pathDistance road_map) valid_routes
+                min_route = Data.List.minimumBy compareDistance (zip valid_routes distances)
+            in fst min_route
+
+
+-- checks if route is valid
+isValidRoute :: RoadMap -> Path -> Bool
+isValidRoute road_map route = 
+    all (\(c1, c2) -> areAdjacent road_map c1 c2) (zip route (drop 1 route))
+
+
+-- compare routes (distances)
+compareDistance :: (Path, Maybe Distance) -> (Path, Maybe Distance) -> Ordering
+compareDistance (_, Nothing) (_, Nothing) = EQ
+compareDistance (_, Just _) (_, Nothing) = LT
+compareDistance (_, Nothing) (_, Just _) = GT
+compareDistance (_, Just d1) (_, Just d2) = compare d1 d2
 
 
 -- função 10
