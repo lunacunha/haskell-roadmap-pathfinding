@@ -108,32 +108,58 @@ bfsDijkstra road_map start end = bfs [[start]]
         next_paths = [current_path ++ [next_city] | next_city <- next_cities]
 
 
+type AdjList = [(City,[(City,Distance)])]
+
 -- função 9
+-- Função auxiliar para encontrar o mínimo usando uma função de comparação
+-- Função auxiliar para encontrar o mínimo usando uma função de comparação
+findMinimum :: (a -> a -> Ordering) -> [a] -> a
+findMinimum _ [x] = x
+findMinimum cmp (x:y:xs) =
+    case cmp x y of
+        LT -> findMinimum cmp (x:xs)
+        _  -> findMinimum cmp (y:xs)
+
+-- Função para encontrar a cidade mais próxima não visitada
+closestUnvisitedCity :: RoadMap -> City -> [City] -> Maybe (City, Distance)
+closestUnvisitedCity r currentCity visited =
+    let unvisitedNeighbors = filter (\(city, _) -> city `notElem` visited) (adjacent r currentCity)
+    in if null unvisitedNeighbors 
+       then Nothing 
+       else Just (findMinimum (\(_, d1) (_, d2) -> compare d1 d2) unvisitedNeighbors)
+
+-- Função auxiliar para o TSP com aproximação gulosa
+travelSalesAux :: RoadMap -> City -> [City] -> Path -> Distance -> [(Path, Distance)]
+travelSalesAux _ _ [] path totalDist = [(reverse path, totalDist)]  -- Retorna o caminho completo quando todas as cidades foram visitadas
+travelSalesAux r currentCity unvisitedCities path totalDist =
+    case closestUnvisitedCity r currentCity path of
+        Nothing -> [(reverse path, totalDist)]  -- Se não há cidade não visitada próxima, retorna o caminho atual
+        Just (nextCity, dist) -> travelSalesAux r nextCity (filter (/= nextCity) unvisitedCities) (nextCity : path) (totalDist + dist)
+
+-- Função principal do TSP que começa a partir de uma cidade inicial
+travelSalesFromCity :: RoadMap -> City -> Path
+travelSalesFromCity r startCity =
+    let allPaths = travelSalesAux r startCity (filter (/= startCity) (cities r)) [startCity] 0
+        validPaths = filter (\(_, dist) -> dist /= maxBound) allPaths
+    in case validPaths of
+        [] -> []
+        _  -> let (path, totalDist) = findMinimum (\(_, d1) (_, d2) -> compare d1 d2) validPaths
+              in case distance r (last path) startCity of
+                    Nothing -> []
+                    Just dist -> path ++ [startCity]  -- Fecha o ciclo voltando à cidade inicial
+
+-- Função principal do TSP que tenta iniciar de diferentes cidades
 travelSales :: RoadMap -> Path
-travelSales road_map = 
-    let all_cities = cities road_map
-        all_routes = Data.List.permutations all_cities
-        valid_routes = filter (isValidRoute road_map) all_routes
-    in if null valid_routes 
-       then []  -- no valid routes
-       else let distances = map (pathDistance road_map) valid_routes
-                min_route = Data.List.minimumBy compareDistance (zip valid_routes distances)
-            in fst min_route
-
-
--- checks if route is valid
-isValidRoute :: RoadMap -> Path -> Bool
-isValidRoute road_map route = 
-    all (\(c1, c2) -> areAdjacent road_map c1 c2) (zip route (drop 1 route))
-
-
--- compare routes (distances)
-compareDistance :: (Path, Maybe Distance) -> (Path, Maybe Distance) -> Ordering
-compareDistance (_, Nothing) (_, Nothing) = EQ
-compareDistance (_, Just _) (_, Nothing) = LT
-compareDistance (_, Nothing) (_, Just _) = GT
-compareDistance (_, Just d1) (_, Just d2) = compare d1 d2
-
+travelSales r =
+    if not (isStronglyConnected r)
+    then []  -- Retorna lista vazia se o grafo não for conectado
+    else
+        let allCities = cities r
+            allPaths = map (travelSalesFromCity r) allCities
+            validPaths = filter (not . null) allPaths
+        in case validPaths of
+            (firstPath:_) -> firstPath  -- Retorna o primeiro caminho válido encontrado
+            [] -> []     
 
 -- função 10
 tspBruteForce :: RoadMap -> Path
@@ -148,3 +174,6 @@ gTest2 = [("0","1",10),("0","2",15),("0","3",20),("1","2",35),("1","3",25),("2",
 
 gTest3 :: RoadMap -- unconnected graph
 gTest3 = [("0","1",4),("2","3",2)] 
+
+gTest4 ::RoadMap
+gTest4 = [("0", "1", 1), ("1", "3", 1), ("2", "3", 1),("0","2",1)]
