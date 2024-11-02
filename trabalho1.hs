@@ -12,6 +12,8 @@ type Distance = Int
 
 type RoadMap = [(City,City,Distance)]
 
+type AdjList = [(City, [(City, Distance)])]
+
 
 -- function 1 (100% tested) - O(m + n^2)
 cities :: RoadMap -> [City]
@@ -78,25 +80,24 @@ dfs road_map city visited_cities
  | otherwise = foldl (\acc (adj_city, _) -> dfs road_map adj_city acc) (city : visited_cities) (adjacent road_map city)
 
 
--- function 8 (semi testada)
+-- function 8 (semi tested) - O((V + E) * log V + P)
 shortestPath :: RoadMap -> City -> City -> [Path]
 shortestPath road_map start_city end_city =
     let all_paths = bfsDijkstra road_map start_city end_city
-        valid_paths = filter (\p -> pathDistance road_map p /= Nothing) all_paths  -- só paths válidos
-        min_dist = minimum [d | Just d <- map (pathDistance road_map) valid_paths]  -- distância + pequena
-    in filter (\p -> pathDistance road_map p == Just min_dist) valid_paths  -- só paths com a distância min
+        valid_paths = filter (\p -> pathDistance road_map p /= Nothing) all_paths  -- only valid paths
+        min_dist = minimum [d | Just d <- map (pathDistance road_map) valid_paths]  -- min distance
+    in filter (\p -> pathDistance road_map p == Just min_dist) valid_paths  -- only paths with min distance
 
--- bfs + dijkstra (porque as edges têm pesos diferentes)
-bfsDijkstra :: RoadMap -> City -> City -> [Path]
-bfsDijkstra road_map start end = bfs [[start]]
+shortestPathHelper :: RoadMap -> City -> City -> [Path]
+shortestPathHelper road_map start end = bfs [([start], 0)]
   where
-    bfs [] = []  -- não há mais paths
-    bfs (current_path:remaining_paths)
+    bfs [] = []
+    bfs ((current_path, current_dist) : remaining_paths)
       | last current_path == end = current_path : bfs remaining_paths
       | otherwise = bfs (remaining_paths ++ next_paths)
       where
-        next_cities = [city | (city, _) <- adjacent road_map (last current_path), city `notElem` current_path]
-        next_paths = [current_path ++ [next_city] | next_city <- next_cities]
+        next_cities = [(city, d) | (city, d) <- adjacent road_map (last current_path), city `notElem` current_path]
+        next_paths = [(current_path ++ [next_city], current_dist + d) | (next_city, d) <- next_cities]
 
 
 -- função 9
@@ -108,7 +109,7 @@ closestUnvisitedCity road_map current_city visited_cities =
        then Nothing 
        else Just (Data.List.minimumBy (\(_, d1) (_, d2) -> compare d1 d2) unvisited_neighbors)
 
--- Função auxiliar para o TSP com aproximação gulosa
+-- greedya app
 travelSalesHelper :: RoadMap -> City -> [City] -> Path -> Distance -> [(Path, Distance)]
 travelSalesHelper _ _ [] path totalDist = [(reverse path, totalDist)]  -- unvisited_cities = [] -> no more cities to go through
 travelSalesHelper r currentCity unvisitedCities path totalDist =
@@ -140,6 +141,7 @@ travelSales road_map
             [] -> []
 
 
+
 -- função 10
 tspBruteForce :: RoadMap -> Path
 tspBruteForce = undefined -- only for groups of 3 people; groups of 2 people: do not edit this function
@@ -156,3 +158,4 @@ gTest3 = [("0","1",4),("2","3",2)]
 
 gTest4 ::RoadMap
 gTest4 = [("0", "1", 1), ("1", "3", 1), ("2", "3", 1),("0","2",1)]
+
