@@ -13,18 +13,16 @@ type Distance = Int
 type RoadMap = [(City,City,Distance)]
 
 
--- function 1 (100% tested)
+-- function 1 (100% tested) - O(m + n^2)
 cities :: RoadMap -> [City]
-cities road_map = Data.List.nub [city | (c1,c2,_) <- road_map , city <- [c1,c2]] -- nub porque temos de tirar os duplicados
+cities road_map = Data.List.nub [city | (c1,c2,_) <- road_map , city <- [c1,c2]] 
 
 
--- function 2 (SEMI TESTADA)
+-- function 2 (semi tested) - O(m)
 areAdjacent :: RoadMap -> City -> City -> Bool
-areAdjacent [] _ _ = False
-areAdjacent ((c1, c2, _):xs) city1 city2 -- temos de pôr (c1,c2,_) porque queremos comparar elementos especificos do tuplo
-    | (c1 == city1 && c2 == city2) || (c1 == city2 && c2 == city1) = True
-    | otherwise = areAdjacent xs city1 city2
-
+areAdjacent road_map city1 city2 = any is_adjacent road_map
+  where
+    is_adjacent (c1, c2, _) = (c1 == city1 && c2 == city2) || (c1 == city2 && c2 == city1)
 
 -- function 3 (SEMI TESTADA)
 distance :: RoadMap -> City -> City -> Maybe Distance
