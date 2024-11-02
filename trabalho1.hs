@@ -49,35 +49,33 @@ pathDistance _ [_] = Just 0
 pathDistance road_map (c1:c2:xs) = do
     dist <- distance road_map c1 c2
     rest <- pathDistance road_map (c2:xs) -- rest of the distances in the path
-    return (dist + rest_dist)
+    return (dist + rest)
 
    
--- function 6 (SEMI TESTADA)
+-- function 6 (semi tested) - O(n * m)
 rome :: RoadMap -> [City]
 rome road_map = [city | city <- cities road_map, length (adjacent road_map city) == highest_degree]
   where
     highest_degree = maximum [length (adjacent road_map city) | city <- cities road_map] -- maximum em vez de max porque maximum retorna o valor máx de uma lista
 
 
--- function 7 (testada)
+-- function 7 (tested) - O(n^2 + n * m)
 isStronglyConnected :: RoadMap -> Bool
-isStronglyConnected road_map = 
-    case cities road_map of
-        [] -> True  -- um grafo vazio é conectado
-        (first_city:_) ->
-            let reachable_from_first = reachable road_map first_city
-                total_cities = length (cities road_map)
-            in length reachable_from_first == total_cities  
+isStronglyConnected road_map =
+    let all_cities = cities road_map
+    in not (null all_cities) && allReachable all_cities road_map
 
+allReachable :: [City] -> RoadMap -> Bool
+allReachable cities road_map =
+    all (\city -> length (reachable road_map city) == length cities) cities -- if you can reach every city from a city
+
+reachable :: RoadMap -> City -> [City]
+reachable road_map city = dfs road_map city []
 
 dfs :: RoadMap -> City -> [City] -> [City]
 dfs road_map city visited_cities
- | city `elem` visited_cities = visited_cities
+ | city `elem` visited_cities = visited_cities -- no need to visit city again
  | otherwise = foldl (\acc (adj_city, _) -> dfs road_map adj_city acc) (city : visited_cities) (adjacent road_map city)
-
--- função para chegar a todas as reachable cities a partir de uma determinada city
-reachable :: RoadMap -> City -> [City]
-reachable road_map city = dfs road_map city []
 
 
 -- function 8 (semi testada)
