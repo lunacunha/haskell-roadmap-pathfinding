@@ -1,4 +1,4 @@
-import qualified Data.List
+import qualified Data.List 
 --import qualified Data.Array
 import qualified Data.Bits
 
@@ -13,14 +13,12 @@ type Distance = Int
 type RoadMap = [(City,City,Distance)]
 
 
--- função 1 (100% testada)
+-- function 1 (100% tested)
 cities :: RoadMap -> [City]
 cities road_map = Data.List.nub [city | (c1,c2,_) <- road_map , city <- [c1,c2]] -- nub porque temos de tirar os duplicados
 
 
--- temos de verificar sempre para os dois lados porque é undirected
-
--- função 2 (SEMI TESTADA)
+-- function 2 (SEMI TESTADA)
 areAdjacent :: RoadMap -> City -> City -> Bool
 areAdjacent [] _ _ = False
 areAdjacent ((c1, c2, _):xs) city1 city2 -- temos de pôr (c1,c2,_) porque queremos comparar elementos especificos do tuplo
@@ -28,7 +26,7 @@ areAdjacent ((c1, c2, _):xs) city1 city2 -- temos de pôr (c1,c2,_) porque quere
     | otherwise = areAdjacent xs city1 city2
 
 
--- função 3 (SEMI TESTADA)
+-- function 3 (SEMI TESTADA)
 distance :: RoadMap -> City -> City -> Maybe Distance
 distance [] _ _ = Nothing
 distance ((c1,c2,d):xs) city1 city2
@@ -36,7 +34,7 @@ distance ((c1,c2,d):xs) city1 city2
     | otherwise = distance xs city1 city2
 
 
--- função 4 (SEMI TESTADA)
+-- function 4 (SEMI TESTADA)
 adjacent :: RoadMap -> City -> [(City,Distance)]
 adjacent [] _ = []
 adjacent ((c1, c2, d):xs) city 
@@ -45,7 +43,7 @@ adjacent ((c1, c2, d):xs) city
     | otherwise = adjacent xs city 
 
 
--- função 5 (SEMI TESTADA)
+-- function 5 (SEMI TESTADA)
 pathDistance :: RoadMap -> Path -> Maybe Distance
 pathDistance _ [] = Just 0
 pathDistance _ [_] = Just 0
@@ -59,14 +57,14 @@ pathDistance road_map (c1:c2:xs) =  -- temos de pôr duas cidades pq temos de ve
         Just rest = pathDistance road_map (c2:xs)  -- distância restante do caminho (recursão)
 
    
--- função 6 (SEMI TESTADA)
+-- function 6 (SEMI TESTADA)
 rome :: RoadMap -> [City]
 rome road_map = [city | city <- cities road_map, length (adjacent road_map city) == highest_degree]
   where
     highest_degree = maximum [length (adjacent road_map city) | city <- cities road_map] -- maximum em vez de max porque maximum retorna o valor máx de uma lista
 
 
--- função 7 (testada)
+-- function 7 (testada)
 isStronglyConnected :: RoadMap -> Bool
 isStronglyConnected road_map = 
     case cities road_map of
@@ -87,7 +85,7 @@ reachable :: RoadMap -> City -> [City]
 reachable road_map city = dfs road_map city []
 
 
--- função 8 (semi testada)
+-- function 8 (semi testada)
 shortestPath :: RoadMap -> City -> City -> [Path]
 shortestPath road_map start_city end_city =
     let all_paths = bfsDijkstra road_map start_city end_city
@@ -108,58 +106,46 @@ bfsDijkstra road_map start end = bfs [[start]]
         next_paths = [current_path ++ [next_city] | next_city <- next_cities]
 
 
-type AdjList = [(City,[(City,Distance)])]
-
 -- função 9
--- Função auxiliar para encontrar o mínimo usando uma função de comparação
--- Função auxiliar para encontrar o mínimo usando uma função de comparação
-findMinimum :: (a -> a -> Ordering) -> [a] -> a
-findMinimum _ [x] = x
-findMinimum cmp (x:y:xs) =
-    case cmp x y of
-        LT -> findMinimum cmp (x:xs)
-        _  -> findMinimum cmp (y:xs)
-
--- Função para encontrar a cidade mais próxima não visitada
+-- finds the closest city not visited
 closestUnvisitedCity :: RoadMap -> City -> [City] -> Maybe (City, Distance)
-closestUnvisitedCity r currentCity visited =
-    let unvisitedNeighbors = filter (\(city, _) -> city `notElem` visited) (adjacent r currentCity)
-    in if null unvisitedNeighbors 
+closestUnvisitedCity road_map current_city visited_cities =
+    let unvisited_neighbors = filter (\(city, _) -> city `notElem` visited_cities) (adjacent road_map current_city)
+    in if null unvisited_neighbors 
        then Nothing 
-       else Just (findMinimum (\(_, d1) (_, d2) -> compare d1 d2) unvisitedNeighbors)
+       else Just (Data.List.minimumBy (\(_, d1) (_, d2) -> compare d1 d2) unvisited_neighbors)
 
 -- Função auxiliar para o TSP com aproximação gulosa
-travelSalesAux :: RoadMap -> City -> [City] -> Path -> Distance -> [(Path, Distance)]
-travelSalesAux _ _ [] path totalDist = [(reverse path, totalDist)]  -- Retorna o caminho completo quando todas as cidades foram visitadas
-travelSalesAux r currentCity unvisitedCities path totalDist =
-    case closestUnvisitedCity r currentCity path of
+travelSalesHelper :: RoadMap -> City -> [City] -> Path -> Distance -> [(Path, Distance)]
+travelSalesHelper _ _ [] path totalDist = [(reverse path, totalDist)]  -- unvisited_cities = [] -> no more cities to go through
+travelSalesHelper r currentCity unvisitedCities path totalDist =
+    case closestUnvisitedCity r currentCity path of  -- Supondo que path já não contém duplicatas
         Nothing -> [(reverse path, totalDist)]  -- Se não há cidade não visitada próxima, retorna o caminho atual
-        Just (nextCity, dist) -> travelSalesAux r nextCity (filter (/= nextCity) unvisitedCities) (nextCity : path) (totalDist + dist)
+        Just (nextCity, dist) -> travelSalesHelper r nextCity (filter (/= nextCity) unvisitedCities) (nextCity : path) (totalDist + dist)
 
--- Função principal do TSP que começa a partir de uma cidade inicial
+-- TSP from a start city
 travelSalesFromCity :: RoadMap -> City -> Path
-travelSalesFromCity r startCity =
-    let allPaths = travelSalesAux r startCity (filter (/= startCity) (cities r)) [startCity] 0
-        validPaths = filter (\(_, dist) -> dist /= maxBound) allPaths
-    in case validPaths of
+travelSalesFromCity road_map start_city =
+    let unvisitedCities = filter (/= start_city) (cities road_map)  -- Compute once
+        all_paths = travelSalesHelper road_map start_city unvisitedCities [start_city] 0
+        valid_paths = filter (\(_, dist) -> dist /= maxBound) all_paths
+    in case valid_paths of
         [] -> []
-        _  -> let (path, totalDist) = findMinimum (\(_, d1) (_, d2) -> compare d1 d2) validPaths
-              in case distance r (last path) startCity of
+        _  -> let (path, total_distance) = Data.List.minimumBy (\(_, d1) (_, d2) -> compare d1 d2) valid_paths
+              in case distance road_map (last path) start_city of
                     Nothing -> []
-                    Just dist -> path ++ [startCity]  -- Fecha o ciclo voltando à cidade inicial
+                    Just dist -> path ++ [start_city]  -- goes back to start city
 
--- Função principal do TSP que tenta iniciar de diferentes cidades
+-- TSP from different start cities
 travelSales :: RoadMap -> Path
-travelSales r =
-    if not (isStronglyConnected r)
-    then []  -- Retorna lista vazia se o grafo não for conectado
-    else
-        let allCities = cities r
-            allPaths = map (travelSalesFromCity r) allCities
-            validPaths = filter (not . null) allPaths
-        in case validPaths of
-            (firstPath:_) -> firstPath  -- Retorna o primeiro caminho válido encontrado
-            [] -> []     
+travelSales road_map
+    | not (isStronglyConnected road_map) = []  
+    | otherwise =
+        let valid_paths = filter (not . null) (map (travelSalesFromCity road_map) (cities road_map))
+        in case valid_paths of
+            (first_path:_) -> first_path -- first valid path
+            [] -> []
+
 
 -- função 10
 tspBruteForce :: RoadMap -> Path
