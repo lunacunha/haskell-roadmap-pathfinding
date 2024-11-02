@@ -24,7 +24,8 @@ areAdjacent road_map city1 city2 = any is_adjacent road_map
   where
     is_adjacent (c1, c2, _) = (c1 == city1 && c2 == city2) || (c1 == city2 && c2 == city1)
 
--- function 3 (SEMI TESTADA)
+
+-- function 3 (semi tested) - O(m)
 distance :: RoadMap -> City -> City -> Maybe Distance
 distance [] _ _ = Nothing
 distance ((c1,c2,d):xs) city1 city2
@@ -32,7 +33,7 @@ distance ((c1,c2,d):xs) city1 city2
     | otherwise = distance xs city1 city2
 
 
--- function 4 (SEMI TESTADA)
+-- function 4 (semi tested) - O(m)
 adjacent :: RoadMap -> City -> [(City,Distance)]
 adjacent [] _ = []
 adjacent ((c1, c2, d):xs) city 
@@ -41,18 +42,14 @@ adjacent ((c1, c2, d):xs) city
     | otherwise = adjacent xs city 
 
 
--- function 5 (SEMI TESTADA)
+-- function 5 (semi tested) - O(n * E)
 pathDistance :: RoadMap -> Path -> Maybe Distance
 pathDistance _ [] = Just 0
 pathDistance _ [_] = Just 0
-pathDistance [] _ = Nothing
-pathDistance road_map (c1:c2:xs) =  -- temos de pôr duas cidades pq temos de ver a distancia
-    if distance road_map c1 c2 == Nothing || pathDistance road_map (c2:xs) == Nothing 
-    then Nothing 
-    else Just (dist + rest)
-    where
-        Just dist = distance road_map c1 c2  -- distância entre c1 e c2
-        Just rest = pathDistance road_map (c2:xs)  -- distância restante do caminho (recursão)
+pathDistance road_map (c1:c2:xs) = do
+    dist <- distance road_map c1 c2
+    rest <- pathDistance road_map (c2:xs) -- rest of the distances in the path
+    return (dist + rest_dist)
 
    
 -- function 6 (SEMI TESTADA)
