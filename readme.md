@@ -28,8 +28,7 @@ The `travelSales` function implements a greedy approximation approach to solve t
    - `RoadMap`, `Path`, and `Distance` are reused to store graph and path details effectively.
    - **Helper Function**: `closestUnvisitedCity` identifies the nearest city not yet visited, ensuring no unnecessary backtracking.
    - **Start Function**: `travelSalesFromStartCity` initializes the TSP solution by selecting a starting city and invoking the nearest neighbor strategy through `travelSalesHelper`.
-3. **Explanation**: This structure, combined with memoization of visited paths, helps achieve an approximate solution for TSP with minimal computation. Although this approach doesn't guarantee the optimal TSP solution, it significantly reduces computational complexity while yielding a near-optimal path for strongly connected graphs.
-
+3. **Explanation**: This structure helps achieve an approximate solution for TSP with minimal computation. While the nearest neighbor strategy doesn’t guarantee an optimal TSP solution, it significantly reduces computational complexity, yielding a near-optimal path for strongly connected graphs.
 
 
 ### Testing Graphs
