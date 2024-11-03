@@ -83,7 +83,7 @@ dfs road_map city visited_cities
 -- function 8 (semi tested) - O((V + E) * log V + P)
 shortestPath :: RoadMap -> City -> City -> [Path]
 shortestPath road_map start_city end_city =
-    let all_paths = bfsDijkstra road_map start_city end_city
+    let all_paths = shortestPathHelper road_map start_city end_city
         valid_paths = filter (\p -> pathDistance road_map p /= Nothing) all_paths  -- only valid paths
         min_dist = minimum [d | Just d <- map (pathDistance road_map) valid_paths]  -- min distance
     in filter (\p -> pathDistance road_map p == Just min_dist) valid_paths  -- only paths with min distance
@@ -109,7 +109,7 @@ closestUnvisitedCity road_map current_city visited_cities =
        then Nothing 
        else Just (Data.List.minimumBy (\(_, d1) (_, d2) -> compare d1 d2) unvisited_neighbors)
 
--- greedya app
+-- greedy approacjh
 travelSalesHelper :: RoadMap -> City -> [City] -> Path -> Distance -> [(Path, Distance)]
 travelSalesHelper _ _ [] path totalDist = [(reverse path, totalDist)]  -- unvisited_cities = [] -> no more cities to go through
 travelSalesHelper r currentCity unvisitedCities path totalDist =
