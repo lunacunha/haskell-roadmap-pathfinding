@@ -104,22 +104,24 @@ shortestPathHelper road_map start end = bfs [([start], 0)]
 -- finds the closest city not visited
 closestUnvisitedCity :: RoadMap -> City -> [City] -> Maybe (City, Distance)
 closestUnvisitedCity road_map current_city visited_cities =
-    let unvisited_neighbors = filter (\(city, _) -> city `notElem` visited_cities) (adjacent road_map current_city)
+    let unvisited_neighbors = [(city, dist) | (city, dist) <- adjacent road_map current_city, city `notElem` visited_cities]
     in if null unvisited_neighbors 
        then Nothing 
        else Just (Data.List.minimumBy (\(_, d1) (_, d2) -> compare d1 d2) unvisited_neighbors)
 
--- greedy approacjh
+-- greedy approach - auxiliary function
 travelSalesHelper :: RoadMap -> City -> [City] -> Path -> Distance -> [(Path, Distance)]
-travelSalesHelper _ _ [] path totalDist = [(reverse path, totalDist)]  -- unvisited_cities = [] -> no more cities to go through
+travelSalesHelper _ _ [] path totalDist = [(reverse path, totalDist)]  -- No more cities to go through
 travelSalesHelper r currentCity unvisitedCities path totalDist =
-    case closestUnvisitedCity r currentCity path of  -- Supondo que path já não contém duplicatas
-        Nothing -> [(reverse path, totalDist)]  -- Se não há cidade não visitada próxima, retorna o caminho atual
-        Just (nextCity, dist) -> travelSalesHelper r nextCity (filter (/= nextCity) unvisitedCities) (nextCity : path) (totalDist + dist)
+    case closestUnvisitedCity r currentCity path of
+        Nothing -> [(reverse path, totalDist)]  -- No more unvisited cities, return the current path
+        Just (nextCity, dist) -> 
+            let newPath = nextCity : path
+            in travelSalesHelper r nextCity (filter (/= nextCity) unvisitedCities) newPath (totalDist + dist)
 
 -- TSP from a start city
-travelSalesFromCity :: RoadMap -> City -> Path
-travelSalesFromCity road_map start_city =
+travelSalesFromStartCity :: RoadMap -> City -> Path
+travelSalesFromStartCity road_map start_city =
     let unvisitedCities = filter (/= start_city) (cities road_map)  -- Compute once
         all_paths = travelSalesHelper road_map start_city unvisitedCities [start_city] 0
         valid_paths = filter (\(_, dist) -> dist /= maxBound) all_paths
@@ -135,12 +137,10 @@ travelSales :: RoadMap -> Path
 travelSales road_map
     | not (isStronglyConnected road_map) = []  
     | otherwise =
-        let valid_paths = filter (not . null) (map (travelSalesFromCity road_map) (cities road_map))
+        let valid_paths = filter (not . null) (map (travelSalesFromStartCity road_map) (cities road_map))
         in case valid_paths of
             (first_path:_) -> first_path -- first valid path
             [] -> []
-
-
 
 -- função 10
 tspBruteForce :: RoadMap -> Path
