@@ -1,39 +1,177 @@
-# Practical Assignment 1 - PFL 2024/2025
+# RoadMap Path Finding - Haskell Assignment
 
-## Group Members and Contributions
-- **Luna Cunha (up202205714)**: Contribution 50%
-  - Functions Implemented: `cities`, `areAdjacent`, `rome`, `isStronglyConnected`, `shortestPath`.
-- **Rodrigo Araújo (up202205515)**: Contribution 50%
-  -  Functions Implemented: `distance`, `adjacent`, `pathDistance`, `travelSales`.
+### Overview
+This Haskell program implements various graph algorithms for analyzing road maps and finding optimal paths between cities. The RoadMap is represented as an undirected weighted graph where cities are nodes and roads are edges with associated distances.
 
+### Data Types
+```haskell
+type City = String
+type Path = [City]
+type Distance = Int
+type RoadMap = [(City, City, Distance)]
+```
 
-## Function Implementations
+A RoadMap is a list of tuples where each tuple represents a bidirectional road between two cities with a given distance.
 
-### Shortest Path (`shortestPath`)
-The `shortestPath` function was implemented to find all paths between two cities and select the shortest. To achieve this, we used the following approach:
-1. **Algorithm**: The function combines **Breadth-First Search (BFS)** with an adaptation of **Dijkstra’s Algorithm** for weighted paths. It explores all paths from the start city to the end city.
-2. **Data Structures**:
-   - `Path`: List of `City` strings representing a sequence of cities in a potential route.
-   - `RoadMap`: A list of tuples, each containing two cities and the distance between them.
-   - **Filtering**: Valid paths are determined by filtering out any paths with invalid distances.
-   - **Memoization**: Auxiliary function `shortestPathHelper` uses BFS to store and track viable paths efficiently.
-3. **Explanation**: BFS is used to maintain traversal order, while Dijkstra helps in assessing distances for shortest paths. These structures were selected for efficiency and simplicity, supporting optimized path selection and minimal redundant computation.
+### Functions
 
+#### 1. `cities :: RoadMap -> [City]`
+Returns a list of all unique cities present in the road map.
 
-### Traveling Salesperson Problem (`travelSales`)
-The `travelSales` function implements a greedy approximation approach to solve the Traveling Salesperson Problem (TSP) for strongly connected graphs:
-1. **Algorithm**: Uses a **Nearest Neighbor** strategy. Starting from a given city, it iteratively selects the closest unvisited city until all cities are visited, then returns to the start city.
-2. **Data Structures**:
-   - **Recursive Path Storage**: `travelSalesHelper` tracks cities visited and accumulates distances to maintain path and distance information.
-   - `RoadMap`, `Path`, and `Distance` are reused to store graph and path details effectively.
-   - **Helper Function**: `closestUnvisitedCity` identifies the nearest city not yet visited, ensuring no unnecessary backtracking.
-   - **Start Function**: `travelSalesFromStartCity` initializes the TSP solution by selecting a starting city and invoking the nearest neighbor strategy through `travelSalesHelper`.
-3. **Explanation**: This structure helps achieve an approximate solution for TSP with minimal computation. While the nearest neighbor strategy doesn’t guarantee an optimal TSP solution, it significantly reduces computational complexity, yielding a near-optimal path for strongly connected graphs.
+**Example:**
+```haskell
+cities gTest1 
+-- Returns: ["7","6","8","2","5","0","1","3","4"]
+```
 
+#### 2. `areAdjacent :: RoadMap -> City -> City -> Bool`
+Checks if two cities are directly connected by a road.
 
-### Testing Graphs
+**Example:**
+```haskell
+areAdjacent gTest1 "0" "1"  -- Returns: True
+areAdjacent gTest1 "0" "4"  -- Returns: False
+```
 
-The following test graphs were used to validate function performance and accuracy:
-- `gTest1`: a general graph with different weights and connectivity
-- `gTest2`: a fully connected graph
-- `gTest3`: an unconnected graph
+#### 3. `distance :: RoadMap -> City -> City -> Maybe Distance`
+Returns the distance between two adjacent cities. Returns `Nothing` if no direct road exists.
+
+**Example:**
+```haskell
+distance gTest1 "0" "1"  -- Returns: Just 4
+distance gTest1 "0" "4"  -- Returns: Nothing
+```
+
+#### 4. `adjacent :: RoadMap -> City -> [(City, Distance)]`
+Returns all cities directly connected to a given city along with their distances.
+
+**Example:**
+```haskell
+adjacent gTest1 "0"  
+-- Returns: [("1",4),("7",8)]
+```
+
+#### 5. `pathDistance :: RoadMap -> Path -> Maybe Distance`
+Calculates the total distance of a given path. Returns `Nothing` if the path is invalid (contains non-adjacent cities).
+
+**Example:**
+```haskell
+pathDistance gTest1 ["0","1","2"]  -- Returns: Just 12
+pathDistance gTest1 ["0","4"]      -- Returns: Nothing
+```
+
+#### 6. `rome :: RoadMap -> [City]`
+Returns all cities with the maximum number of connections (highest degree). Named after the saying "all roads lead to Rome."
+
+**Example:**
+```haskell
+rome gTest1  
+-- Returns cities with the most connections
+```
+
+#### 7. `isStronglyConnected :: RoadMap -> Bool`
+Checks if the road map is strongly connected, meaning every city can be reached from every other city.
+
+**Implementation:** Uses Depth-First Search (DFS) to verify that all cities are reachable from each city.
+
+**Example:**
+```haskell
+isStronglyConnected gTest1  -- Returns: True
+isStronglyConnected gTest3  -- Returns: False (disconnected graph)
+```
+
+#### 8. `shortestPath :: RoadMap -> City -> City -> [Path]`
+Finds all shortest paths between two cities using Breadth-First Search (BFS). Returns all paths with the minimum distance.
+
+**Example:**
+```haskell
+shortestPath gTest1 "0" "4"
+-- Returns all paths from "0" to "4" with minimum distance
+```
+
+#### 9. `travelSales :: RoadMap -> Path`
+Solves the Traveling Salesman Problem using a greedy nearest-neighbor approach. Returns a path that visits all cities and returns to the starting city.
+
+**Algorithm:** 
+- Starts from an arbitrary city
+- Repeatedly visits the closest unvisited neighbor
+- Returns to the starting city
+
+**Note:** This is a heuristic solution and may not always find the optimal path.
+
+**Example:**
+```haskell
+travelSales gTest1
+-- Returns a path visiting all cities (may not be optimal)
+```
+
+**Returns empty path if graph is not strongly connected:**
+```haskell
+travelSales gTest3  -- Returns: []
+```
+
+#### 10. `tspBruteForce :: RoadMap -> Path`
+**(For groups of 3 students only)**
+This function should implement a brute-force solution to find the optimal TSP path by checking all possible permutations.
+
+### Test Graphs
+
+#### gTest1
+A connected graph with 9 cities and 14 roads:
+```haskell
+gTest1 = [("7","6",1),("8","2",2),("6","5",2),("0","1",4),("2","5",4),
+          ("8","6",6),("2","3",7),("7","8",7),("0","7",8),("1","2",8),
+          ("3","4",9),("5","4",10),("1","7",11),("3","5",14)]
+```
+
+#### gTest2
+A fully connected graph with 4 cities:
+```haskell
+gTest2 = [("0","1",10),("0","2",15),("0","3",20),
+          ("1","2",35),("1","3",25),("2","3",30)]
+```
+
+#### gTest3
+A disconnected graph for testing:
+```haskell
+gTest3 = [("0","1",4),("2","3",2)]
+```
+
+### Dependencies
+```haskell
+import qualified Data.List
+import qualified Data.Array
+import qualified Data.Bits
+```
+
+### Usage
+
+Load the file in GHCi:
+```bash
+ghci YourFileName.hs
+```
+
+Run functions with test graphs:
+```haskell
+cities gTest1
+shortestPath gTest1 "0" "4"
+travelSales gTest2
+```
+
+### Implementation Notes
+
+- All roads are **bidirectional** (undirected graph)
+- The `travelSales` function uses a **greedy approach** (nearest neighbor heuristic)
+- Empty paths `[]` are returned for invalid scenarios (e.g., disconnected graphs in TSP)
+- Helper functions use DFS and BFS for graph traversal
+- The implementation prioritizes clarity and correctness over performance optimization
+
+### Algorithms Used
+
+- **DFS (Depth-First Search):** For connectivity checking
+- **BFS (Breadth-First Search):** For finding shortest paths
+- **Greedy Nearest Neighbor:** For TSP approximation
+
+--
+
+#### Practical Assignment 1 - PFL 2024/2025
